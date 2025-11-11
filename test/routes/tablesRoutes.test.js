@@ -1,6 +1,7 @@
 import request from 'supertest';
-import { afterAll, beforeAll, describe, expect, it } from '@jest/globals';
+import { afterAll, beforeAll, describe, expect, it, jest } from '@jest/globals';
 import app from '../../src/app.js';
+import TablesService from '../../src/services/tablesService.js';
 
 let server;
 beforeAll(() => {
@@ -18,7 +19,7 @@ describe('Testando as rotas de tables', () => {
             .expect(200);
     });
 
-    it('/tables/:id deve retornar uma mesa com o id passado (GET))', async () => {
+    it('/tables/:id deve retornar uma mesa com o id passado (GET)', async () => {
         const idMock = 1;
 
         const response = await request(app)
@@ -26,5 +27,30 @@ describe('Testando as rotas de tables', () => {
             .expect(200);
         
         expect(response.body.id).toBe(idMock);
+    });
+
+    it('/tables deve retornar status 500 em caso de erro no servidor', async () => {
+        jest.spyOn(TablesService, 'listTables').mockRejectedValue(new Error('DataBase error'));
+
+        await request(app)
+            .get('/tables')
+            .expect(500);
+    });
+
+    it.each([
+        {value: 3.5},
+        {value: 'a'},
+    ])('/tables/:id deve retornar status 400 para id $value (GET)', async (value) => {
+        await request(app)
+            .get(`/tables/${value}`)
+            .expect(400);
+    });
+
+    it('/tables/:id deve retornar status 500 em caso de erro no servidor', async () => {
+        jest.spyOn(TablesService, 'listTablesById').mockRejectedValue(new Error('DetaBase error'));
+
+        await request(app)
+            .get('/tables/1')
+            .expect(500);
     });
 });

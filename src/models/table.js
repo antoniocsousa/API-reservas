@@ -1,14 +1,13 @@
 import db from '../db/dbConfig.js';
 
 class Table {
-    constructor(id, seats, active) {
-        this.id = id;
+    constructor({seats, active}) {
         this.seats = seats;
         this.active = active;
     }
 
     static async getTables() {
-        return db.select('*').from('tables');
+        return await db.select('*').from('tables');
     }
 
     static async getTableById(id) {
