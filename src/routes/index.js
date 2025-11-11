@@ -1,4 +1,5 @@
 import express from 'express';
+import tables from './tablesRoutes.js';
 
 const routes = (app) => {
     app.route('/').get((_, res) => {
@@ -7,6 +8,7 @@ const routes = (app) => {
 
     app.use(
         express.json(),
+        tables,
     )
 }
 

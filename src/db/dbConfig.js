@@ -1,16 +1,16 @@
-import pg from "pg";
+import knex from 'knex';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-const db = new pg.Client({
-    connectionString: "postgresql://postgres:1969Reserva12@db.bopxidzuvdolvnffcnzn.supabase.co:5432/postgres",
-    ssl: {
-        rejectUnauthorized: false,
-    },
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const db = knex({
+  client: 'sqlite3',
+  connection: {
+    filename: path.join(__dirname, './restaurante.sqlite'),
+  },
+  useNullAsDefault: true,
 });
 
-await db.connect();
-
-const result = await db.query('INSERT INTO tables (seats, active) VALUES ($1, $2);', [4, true]);
-
-console.log(result.rows);
-
-await db.end();
+export default db;
