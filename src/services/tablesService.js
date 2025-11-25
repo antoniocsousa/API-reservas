@@ -29,6 +29,8 @@ class TablesService {
                 throw new Error('The "seats" field is required.');
             } else if (body.active === undefined) {
                 throw new Error('The "active" field is required.');
+            } else if (typeof body.seats !== 'number' || typeof body.active !== 'boolean') {
+                throw new Error('invalid data');
             }
             
             const table = new Table(body);

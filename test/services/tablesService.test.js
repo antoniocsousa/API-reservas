@@ -59,6 +59,31 @@ describe('Testando tablesService', () => {
             .toThrow(Error('The "active" field is required.'));
     });
 
+    it.each([
+        {seats: '4', active: true},
+        {seats: 4, active: 'true'},
+    ])('createTable deve retornar erro se seats ou active tiverem tipos inválidos', async (tableMock) => {
+        await expect(TablesService.createTable(tableMock))
+            .rejects
+            .toThrow(Error('invalid data'));
+    });
+
+    it('updateTable deve retornar mensagem de sucesso ao atualizar mesa', async () => {
+        const idMock = 1;
+
+        const response = await TablesService.updateTable(idMock);
+
+        expect(response).toEqual(expect.objectContaining({message: 'Table updated'}));
+    });
+
+    it('updateTable deve retornar erro se id não for inteiro', async () => {
+        const idMock = '1';
+
+        await expect(TablesService.updateTable(idMock))
+            .rejects
+            .toThrow(Error('The parameter "id" must be integer'));
+    });
+
     it('updateTable deve retornar erro se a atualização falhar', async () => {
         jest.spyOn(Table, 'patchTable').mockRejectedValue(new Error());
         const idMock = 1;
@@ -66,6 +91,22 @@ describe('Testando tablesService', () => {
         await expect(TablesService.updateTable(idMock))
             .rejects
             .toThrow(Error());
+    });
+
+    it('deleteTable deve retornar ensagem de sucesso ao deletar mesa', async () => {
+        const idMock = 1;
+
+        const response = await TablesService.deleteTable(idMock);
+
+        expect(response).toEqual(expect.objectContaining({message: 'Table deleted'}));
+    });
+
+    it('deleteTable deve retornar erro se id não for inteiro', async () => {
+        const idMock = '1';
+
+        await expect(TablesService.deleteTable(idMock))
+            .rejects
+            .toThrow(Error('The parameter "id" must be integer'));
     });
 
     it('deleteTable deve retornar erro se falhar', async () => {

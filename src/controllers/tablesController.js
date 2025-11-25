@@ -31,15 +31,11 @@ class TablesController {
             const { body } = req;
             const { seats, active } = body;
 
-            if (typeof seats !== 'number' || typeof active !== 'boolean') {
-                return res.status(400).json({ message: 'invalid data' });
-            }
-
             const result = await TablesService.createTable({ seats, active });
 
             res.status(201).json(result);
         } catch (error) {
-            if (error.message === 'The "seats" field is required.' || error.message === 'The "active" field is required.') {
+            if (error.message === 'The "seats" field is required.' || error.message === 'The "active" field is required.' || error.message === 'invalid data') {
                 res.status(400).json(error.message);
             } else {
                 res.status(500).json(error.message);
@@ -62,7 +58,7 @@ class TablesController {
         }
     }
 
-    static deleteTable = async (res, req) => {
+    static deleteTable = async (req, res) => {
         try {
             const id = parseInt(req.params.id);
             const result = await TablesService.deleteTable(id);

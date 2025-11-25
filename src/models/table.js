@@ -23,15 +23,16 @@ class Table {
     }
 
     static async patchTable(id) {
-        const table = await Table.getTableById(id);
+        const [ table ] = await db.select('*').from('tables').where({ id });
         await db('tables').update({
             active: !table.active,
         }).where({ id });
-        return await Table.getTableById(id);
+        const [ updated ] = await db.select('*').from('tables').where({ id });
+        return updated;
     }
 
     static async deleteTable(id) {
-        const deleted = Table.getTableById(id);
+        const [ deleted ] = await db.select('*').from('tables').where({ id });
         await db('tables')
             .where({ id })
             .del();

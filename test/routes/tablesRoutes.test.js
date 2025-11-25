@@ -21,7 +21,7 @@ afterAll(() => {
     server.close();
 });
 
-describe('Testando as rotas GET de tables', () => {
+describe('Testes das rotas GET de tables', () => {
     it('/tables deve retornar uma lista de mesas (GET)', async () => {
         await request(app)
             .get('/tables')
@@ -64,7 +64,7 @@ describe('Testando as rotas GET de tables', () => {
     });
 });
 
-describe('Testando as rotas POST de tables', () => {
+describe('Testes das rotas POST de tables', () => {
     it('/tables deve criar nova mesa e retornar status 201 (POST)', async () => {
         const tableMock = {
             seats: 4,
@@ -75,5 +75,117 @@ describe('Testando as rotas POST de tables', () => {
             .post('/tables')
             .send(tableMock)
             .expect(201);
+    });
+
+    it('/tables deve retornar status 400 se seats não for passado (POST)', async () => {
+        const tableMock = {
+            active: true,
+        };
+
+        const response = await request(app)
+            .post('/tables')
+            .send(tableMock)
+            .expect(400);
+        
+        expect(response.body).toBe('The "seats" field is required.');
+    });
+
+    it('/tables deve retornar status 400 se active não for passado (POST)', async () => {
+        const tableMock = {
+            seats: 4,
+        };
+
+        const response = await request(app)
+            .post('/tables')
+            .send(tableMock)
+            .expect(400);
+        
+        expect(response.body).toBe('The "active" field is required.');
+    });
+
+    it.each([
+        {seats: '4', active: true},
+        {seats: 4, active: 'true'},
+    ])('/tables deve retornar status 400 se seats ou active tiverem tipos inválidos', async (tableMock) => {
+        const response = await request(app)
+            .post('/tables')
+            .send(tableMock)
+            .expect(400);
+        
+        expect(response.body).toBe('invalid data');
+    })
+
+    it('/tables deve retornar status 500 em caso de erro no servidor (POST)', async () => {
+        const tableMock = {
+            seats: 4,
+            active: true,
+        };
+
+        jest.spyOn(Table.prototype, 'postTable').mockRejectedValue(new Error('DetaBase error'));
+
+        await request(app)
+            .post('/tables')
+            .send(tableMock)
+            .expect(500);
+    });
+});
+
+describe('Testes das rotas PATCH de tables', () => {
+    it('/tables/:id deve atualizar mesa e retornar status 200 (PATCH)', async () => {
+        const idMock = 1;
+
+        await request(app)
+            .patch(`/tables/${idMock}`)
+            .expect(200);
+    });
+
+    it('/tables/:id deve retornar status 400 se id não for inteiro (PATCH)', async () => {
+        const idMock = 'test';
+
+        const response = await request(app)
+            .patch(`/tables/${idMock}`)
+            .expect(400);
+        
+        expect(response.body).toBe('The parameter "id" must be integer');
+    });
+
+    it('/tables/:id deve retornar status 500 em caso de erro no servidor (PATCH)', async () => {
+        const idMock = 1;
+
+        jest.spyOn(Table, 'patchTable').mockRejectedValue(new Error('DetaBase error'));
+
+        await request(app)
+            .patch(`/tables/${idMock}`)
+            .expect(500);
+    });
+});
+
+describe('Testes das rotas DELETE de tables', () => {
+    it('/tables/:id deve deletar uma mesa e retornar status 200 (DELETE)', async () => {
+        const idMock = 1;
+
+        await request(app)
+            .delete(`/tables/${idMock}`)
+            .expect(200);
+    });
+
+    it('/tables/:id deve retornar status 400 se id não for inteiro (DELETE)', async () => {
+        const idMock = 'test';
+
+        const response = await request(app)
+            .delete(`/tables/${idMock}`)
+            .expect(400);
+        
+        expect(response.body).toBe('The parameter "id" must be integer')
+    });
+
+    it('/tables/:id deve retornar status 500 em caso de erro no servidor (DELETE)', async () => {
+        const idMock = 1;
+
+        jest.spyOn(Table, 'deleteTable').mockRejectedValue(new Error('DetaBase error'));
+
+        await request(app)
+            .delete(`/tables/${idMock}`)
+            .expect(500);
     });
 });
