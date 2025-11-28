@@ -1,5 +1,14 @@
-import { describe, expect, it } from '@jest/globals';
+import { describe, expect, it, beforeEach, afterEach } from '@jest/globals';
 import Reservation from "../../src/models/reservation.js";
+import db from '../../src/db/dbConfig.js';
+
+beforeEach(async () => {
+    await db.raw('BEGIN TRANSACTION');
+});
+
+afterEach(async () => {
+    await db.raw('ROLLBACK');
+});
 
 describe('Testando Reservation', () => {
     const reservationMock = {
@@ -19,8 +28,31 @@ describe('Testando Reservation', () => {
 
     it('Reservation.getReservationById deve retornar a reserva com o ID especificado', async () => {
         const id = 1;
-        const reservation = await Reservation.getReservationById(id);
+        const response = await Reservation.getReservationById(id);
 
-        expect(reservation.id).toBe(id);
+        expect(response.id).toBe(id);
+    });
+
+    it('Reservation.createReservation deve criar uma nova reserva', async () => {
+        const created = await reservation.postReservation();
+
+        expect(await db.select('*').from('reservations').where({ id: created.id })).toBeDefined();
+    });
+
+    it('Reservation.updateReservation deve atualizar uma reserva', async () => {
+        const [ createdId ] = await db('reservations').insert(reservationMock);
+
+        const updated = await Reservation.putReservation({ id: createdId, costumer_name: 'duda' });
+
+        expect(updated.costumer_name).not.toBe(reservationMock.costumer_name);
+    });
+
+    it('Reservation.deleteReservation deve apagar uma reserva', async () => {
+        const [ createdId ] = await db('reservations').insert(reservationMock);
+
+        await Reservation.deleteReservation(createdId);
+        const [ deleted ] = await db.select('*').from('reservations').where({id: createdId})
+
+        expect(deleted).toBeUndefined();
     });
 });

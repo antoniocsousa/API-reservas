@@ -15,6 +15,29 @@ class Reservation {
         const reservation = await db.select('*').from('reservations').where({ id });
         return reservation[0];
     }
+
+    async postReservation() {
+        const { table_id, costumer_name, date_time } = this;
+        const [ created ] = await db('reservations').insert({ table_id, costumer_name, date_time });
+        const [ reservation ] = await db.select('*').from('reservations').where({ id: created });
+        return reservation;
+    }
+
+    static async putReservation(reservation) {
+        await db('reservations')
+            .update({...reservation})
+            .where({ id: reservation.id });
+        const [ updated ] = await db.select('*').from('reservations').where({ id: reservation.id });
+        return updated;
+    }
+
+    static async deleteReservation(id) {
+        const [ deleted ] = await db.select('*').from('reservations').where({ id });
+        await db('reservations')
+            .where({ id })
+            .del();
+        return deleted;
+    }
 }
 
 export default Reservation;
